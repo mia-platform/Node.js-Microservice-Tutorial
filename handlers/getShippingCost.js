@@ -19,13 +19,17 @@
 async function handler(req, reply) {
   const DEFAULT_SHIPPING_COST = 1000
   const { NEW_CUSTOMER_SHIPPING_COST } = this.config
+  req.log.info({ value: NEW_CUSTOMER_SHIPPING_COST }, 'NEW_CUSTOMER_SHIPPING_COST value')
 
   // Get query params
   const { orderId } = req.query
+  req.log.info({ orderId }, 'OrderId value')
 
   // Get proxy for interact with the Crud Service
   const proxy = req.getDirectServiceProxy('crud-service', { protocol: 'http' })
   const orderCrudRes = await proxy.get(`/orders/${orderId}`)
+
+  req.log.info({ stausCode: orderCrudRes.statusCode }, 'Status Code')
 
   if (orderCrudRes.statusCode !== 200) {
     reply.
@@ -64,7 +68,7 @@ const schema = {
     },
   },
   response: {
-    '2xx': {
+    '200': {
       type: 'object',
       properties: {
         shippingCost: { type: 'number' },
