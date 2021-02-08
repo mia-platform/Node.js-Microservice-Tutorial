@@ -16,12 +16,18 @@
 /* eslint require-await: 0 */
 'use strict'
 
-const customService = require('@mia-platform/custom-plugin-lib')()
-/* eslint-disable-next-line no-unused-vars */
+const customService = require('@mia-platform/custom-plugin-lib')({
+  type: 'object',
+  required: ['NEW_CUSTOMER_SHIPPING_COST'],
+  properties: {
+    'NEW_CUSTOMER_SHIPPING_COST': { type: 'number' },
+  },
+})
+
+const hello = require('./handlers/hello')
+const getShippingCost = require('./handlers/getShippingCost')
+
 module.exports = customService(async function index(service) {
-
-  /*
-   * Insert your code here.
-   */
-
+  service.addRawCustomPlugin('GET', '/hello', hello.handler, hello.schema)
+  service.addRawCustomPlugin('GET', '/get-shipping-cost', getShippingCost.handler, getShippingCost.schema)
 })
