@@ -23,7 +23,7 @@ async function handler(req, reply) {
 
   // Get query params
   const { orderId } = req.query
-  req.log.info({ orderId }, 'OrderId value')
+  req.log.info({ id: orderId, query: req.query }, 'orderId value')
 
   // Get proxy for interact with the Crud Service
   const proxy = req.getDirectServiceProxy('crud-service', { protocol: 'http' })
