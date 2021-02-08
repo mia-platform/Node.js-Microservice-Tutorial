@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Mia srl
+ * Copyright 2021 Mia srl
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ const t = require('tap')
 const lc39 = require('@mia-platform/lc39')
 const nock = require('nock')
 
+const NEW_CUSTOMER_SHIPPING_COST = 5000
+
 async function setupFastify(envVariables) {
   const fastify = await lc39('./index.js', {
     logLevel: 'silent',
@@ -36,7 +38,7 @@ t.test('get-shipping-cost', async t => {
     CLIENTTYPE_HEADER_KEY: 'clienttype',
     BACKOFFICE_HEADER_KEY: 'backoffice',
     MICROSERVICE_GATEWAY_SERVICE_NAME: 'microservice-gateway.example.org',
-    NEW_CUSTOMER_SHIPPING_COST: 5000,
+    NEW_CUSTOMER_SHIPPING_COST,
   })
 
   t.tearDown(async() => {
@@ -57,7 +59,7 @@ t.test('get-shipping-cost', async t => {
 
   t.test('GET /get-shipping-cost', t => {
     const CRUD_URL = 'http://crud-service'
-    const NEW_CUSTOMER_SHIPPING_COST = 5000
+    const DEFAULT_SHIPPING_COST = 1000
 
     t.test('New customer shipping cost', async t => {
       const orderId = '1'
@@ -93,6 +95,92 @@ t.test('get-shipping-cost', async t => {
       getOrderScope.done()
       getCustomerScope.done()
     })
+
+    t.test('Default shipping cost', async t => {
+      const orderId = '1'
+
+      const mockedOrder = {
+        customerId: '2',
+      }
+
+      const { customerId } = mockedOrder
+
+      const mockedCustomer = {
+        customerVATId: customerId,
+        newCustomer: false,
+      }
+
+      const getOrderScope = nock(CRUD_URL)
+        .get(`/orders/${orderId}`)
+        .reply(200, mockedOrder)
+
+      const getCustomerScope = nock(CRUD_URL)
+        .get(`/customers/${customerId}`)
+        .reply(200, mockedCustomer)
+
+      const response = await fastify.inject({
+        method: 'GET',
+        url: '/get-shipping-cost',
+        query: {
+          orderId,
+        },
+      })
+      t.equal(response.statusCode, 200)
+      t.same(JSON.parse(response.payload), { shippingCost: DEFAULT_SHIPPING_COST })
+      getOrderScope.done()
+      getCustomerScope.done()
+    })
+
+    t.test('Order does not exist', async t => {
+      const orderId = '-1'
+
+      const getOrderScope = nock(CRUD_URL)
+        .get(`/orders/${orderId}`)
+        .reply(404, { 'error': 'not found' })
+
+      const response = await fastify.inject({
+        method: 'GET',
+        url: '/get-shipping-cost',
+        query: {
+          orderId,
+        },
+      })
+      t.equal(response.statusCode, 404)
+      t.same(JSON.parse(response.payload), { error: 'Order does not exist' })
+      getOrderScope.done()
+    })
+
+    t.test('Customer does not exist', async t => {
+      const orderId = '1'
+
+      const mockedOrder = {
+        customerId: '-1',
+      }
+
+      const { customerId } = mockedOrder
+
+      const getOrderScope = nock(CRUD_URL)
+        .get(`/orders/${orderId}`)
+        .reply(200, mockedOrder)
+
+      const getCustomerScope = nock(CRUD_URL)
+        .get(`/customers/${customerId}`)
+        .reply(404, { 'error': 'not found' })
+
+
+      const response = await fastify.inject({
+        method: 'GET',
+        url: '/get-shipping-cost',
+        query: {
+          orderId,
+        },
+      })
+      t.equal(response.statusCode, 404)
+      t.same(JSON.parse(response.payload), { error: 'Customer does not exist' })
+      getOrderScope.done()
+      getCustomerScope.done()
+    })
+
     t.end()
   })
 

@@ -1,5 +1,20 @@
-'use strict'
+/*
+ * Copyright 2021 Mia srl
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+'use strict'
 
 async function handler(req, reply) {
   const DEFAULT_SHIPPING_COST = 1000
@@ -11,9 +26,8 @@ async function handler(req, reply) {
   // Get proxy for interact with the Crud Service
   const proxy = req.getDirectServiceProxy('crud-service', { protocol: 'http' })
   const orderCrudRes = await proxy.get(`/orders/${orderId}`)
-  const order = orderCrudRes.payload
 
-  if (!order) {
+  if (orderCrudRes.statusCode !== 200) {
     reply.
       code(404)
       .send({
@@ -21,11 +35,11 @@ async function handler(req, reply) {
       })
     return
   }
+  const order = orderCrudRes.payload
 
   const customerCrudRes = await proxy.get(`/customers/${order.customerId}`)
-  const customer = customerCrudRes.payload
 
-  if (!customer) {
+  if (customerCrudRes.statusCode !== 200) {
     reply.
       code(404)
       .send({
@@ -33,6 +47,7 @@ async function handler(req, reply) {
       })
     return
   }
+  const customer = customerCrudRes.payload
 
   const { newCustomer } = customer
 
