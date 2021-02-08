@@ -61,7 +61,7 @@ async function handler(req, reply) {
 }
 
 const schema = {
-  params: {
+  querystring: {
     type: 'object',
     properties: {
       orderId: { type: 'string' },
