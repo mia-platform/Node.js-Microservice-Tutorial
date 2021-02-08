@@ -23,13 +23,10 @@ async function handler(req, reply) {
 
   // Get query params
   const { orderId } = req.query
-  req.log.info({ id: orderId, query: req.query }, 'orderId value')
 
   // Get proxy for interact with the Crud Service
   const proxy = req.getDirectServiceProxy('crud-service', { protocol: 'http' })
   const orderCrudRes = await proxy.get(`/orders/${orderId}`)
-
-  req.log.info({ stausCode: orderCrudRes.statusCode }, 'Status Code')
 
   if (orderCrudRes.statusCode !== 200) {
     reply.
