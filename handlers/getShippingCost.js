@@ -26,9 +26,14 @@ async function handler(req, reply) {
 
   // Get proxy for interact with the Crud Service
   const proxy = req.getDirectServiceProxy('crud-service', { protocol: 'http' })
-  const orderCrudRes = await proxy.get(`/orders/${orderId}`)
 
-  if (orderCrudRes.statusCode !== 200) {
+  const allowedStatusCodes = [200]
+
+  let orderCrudRes
+
+  try {
+    orderCrudRes = await proxy.get(`/orders/${orderId}`, null, { allowedStatusCodes })
+  } catch (error) {
     reply.
       code(404)
       .send({
@@ -36,11 +41,14 @@ async function handler(req, reply) {
       })
     return
   }
+
   const order = orderCrudRes.payload
 
-  const customerCrudRes = await proxy.get(`/customers/${order.customerId}`)
+  let customerCrudRes
 
-  if (customerCrudRes.statusCode !== 200) {
+  try {
+    customerCrudRes = await proxy.get(`/customers/${order.customerId}`, null, { allowedStatusCodes })
+  } catch (error) {
     reply.
       code(404)
       .send({
@@ -48,6 +56,7 @@ async function handler(req, reply) {
       })
     return
   }
+
   const customer = customerCrudRes.payload
 
   const { newCustomer } = customer
