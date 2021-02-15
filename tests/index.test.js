@@ -24,6 +24,7 @@ const NEW_CUSTOMER_SHIPPING_COST = 5000
 
 async function setupFastify(envVariables) {
   const fastify = await lc39('./index.js', {
+    // silent => trace for enabling logs
     logLevel: 'silent',
     envVariables,
   })
@@ -31,7 +32,6 @@ async function setupFastify(envVariables) {
 }
 
 t.test('get-shipping-cost', async t => {
-  // silent => trace for enabling logs
   const fastify = await setupFastify({
     USERID_HEADER_KEY: 'userid',
     GROUPS_HEADER_KEY: 'groups',
