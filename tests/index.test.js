@@ -31,7 +31,7 @@ async function setupFastify(envVariables) {
 }
 
 t.test('get-shipping-cost', async t => {
-  // silent => trace for enabliing logs
+  // silent => trace for enabling logs
   const fastify = await setupFastify({
     USERID_HEADER_KEY: 'userid',
     GROUPS_HEADER_KEY: 'groups',
