@@ -30,12 +30,11 @@ async function handler(req, reply) {
   const allowedStatusCodes = [200]
 
   let orderCrudRes
-
   try {
     orderCrudRes = await proxy.get(`/orders/${orderId}`, null, { allowedStatusCodes })
   } catch (error) {
-    reply.
-      code(404)
+    reply
+      .code(404)
       .send({
         error: 'Order does not exist',
       })
@@ -45,22 +44,19 @@ async function handler(req, reply) {
   const order = orderCrudRes.payload
 
   let customerCrudRes
-
   try {
     customerCrudRes = await proxy.get(`/customers/${order.customerId}`, null, { allowedStatusCodes })
   } catch (error) {
-    reply.
-      code(404)
+    reply
+      .code(404)
       .send({
         error: 'Customer does not exist',
       })
     return
   }
 
-  const customer = customerCrudRes.payload
-
+  const { payload: customer } = customerCrudRes
   const { newCustomer } = customer
-
   return {
     shippingCost: newCustomer ? NEW_CUSTOMER_SHIPPING_COST : DEFAULT_SHIPPING_COST,
   }
