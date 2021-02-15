@@ -55,7 +55,8 @@ async function handler(req, reply) {
     return
   }
 
-  const { payload: { customer: { newCustomer } } } = customerCrudRes
+  const { payload:  customer } = customerCrudRes
+  const { newCustomer } = customer
   return {
     shippingCost: newCustomer ? NEW_CUSTOMER_SHIPPING_COST : DEFAULT_SHIPPING_COST,
   }
